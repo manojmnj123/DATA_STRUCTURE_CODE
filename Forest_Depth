@@ -1,0 +1,42 @@
+import java.util.*;
+public class ForestDepth {
+    public static void main(String[] args) {
+        Scanner scanner = new Scanner(System.in);
+
+        int T = scanner.nextInt(); 
+        for (int t = 0; t < T; t++) {
+            int N = scanner.nextInt(); 
+            int[] parent = new int[N];
+            
+            for (int i = 0; i < N; i++) {
+                parent[i] = scanner.nextInt();
+            }
+            
+            int[] depthCount = new int[N];
+            int maxNodes = 0;
+            int maxDepth = 0;
+            
+            for (int i = 0; i < N; i++) {
+                int node = i;
+                int depth = 0;
+                while (node != -1) {
+                    if (depth < depthCount[node]) {
+                        break; 
+                    }
+                    depthCount[node] = depth;
+                    node = parent[node];
+                    depth++;
+                }
+                
+                if (depth > maxDepth || (depth == maxepth && depthCount[node] > maxNodes)) {
+                    maxDepth = depth;
+                    maxNodes = depthCount[node];
+                }
+            }
+            
+            System.out.println(maxDepth);
+        }
+        
+        scanner.close();
+    }
+}
