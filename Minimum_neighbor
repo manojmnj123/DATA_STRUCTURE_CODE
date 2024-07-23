@@ -1,0 +1,75 @@
+import java.util.*;
+class Graph {
+    private int V; 
+    private List<Integer>[] adj; 
+
+    public Graph(int V) {
+        this.V = V;
+        adj = new ArrayList[V];
+        for (int i = 0; i < V; i++) {
+            adj[i] = new ArrayList<>();
+        }
+    }
+
+    public void addEdge(int u, int v) {
+        adj[u].add(v);
+        adj[v].add(u); // Assuming undirected graph
+    }
+
+    private void dfs(int src, boolean[] visited) {
+        visited[src] = true;
+        for (int neighbor : adj[src]) {
+            if (!visited[neighbor]) {
+                dfs(neighbor, visited);
+            }
+        }
+    }
+
+    private boolean isReachable(int src, int dest) {
+        boolean[] visited = new boolean[V];
+        dfs(src, visited);
+        return visited[dest];
+    }
+
+    public List<Integer> minNeighborsToBlock(int src, int dest) {
+        List<Integer> neighborsToBlock = new ArrayList<>();
+        for (int neighbor : adj[dest]) {
+            adj[dest].remove(Integer.valueOf(neighbor));
+            adj[neighbor].remove(Integer.valueOf(dest));
+
+            if (isReachable(src, dest)) {
+                neighborsToBlock.add(neighbor);
+            }
+
+            // Restore the removed edge
+            adj[dest].add(neighbor);
+            adj[neighbor].add(dest);
+        }
+        return neighborsToBlock;
+    }
+}
+
+public class Main {
+    public static void main(String[] args) {
+        int V = 6; // Number of vertices
+        Graph graph = new Graph(V);
+
+        graph.addEdge(0, 1);
+        graph.addEdge(0, 2);
+        graph.addEdge(1, 3);
+        graph.addEdge(2, 3);
+        graph.addEdge(3, 4);
+        graph.addEdge(4, 5);
+
+        int src = 0; // Source node
+        int dest = 5;  
+        List<Integer> result = graph.minNeighborsToBlock(src, dest);
+
+        System.out.println("Minimum neighbors to block to ensure unreachability from " + src + " to " + dest + ":");
+        if (result.isEmpty()) {
+            System.out.println("No neighbors need to be blocked.");
+        } else {
+            System.out.println(result);
+        }
+    }
+}
