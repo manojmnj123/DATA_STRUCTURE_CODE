@@ -1,0 +1,153 @@
+import java.util.*;
+class TreeNode {
+    int val;
+    List<TreeNode> children;
+    boolean locked;
+    int lockedBy;
+    TreeNode parent;
+    
+    public TreeNode(int val) {
+        this.val = val;
+        this.children = new ArrayList<>();
+        this.locked = false;
+        this.lockedBy = -1; // -1 indicates not locked by any user
+        this.parent = null;
+    }
+}
+
+// M-ary Tree class
+class MArayTree {
+    TreeNode root;
+    
+    public MArayTree(int[] parent) {
+        // Build tree from parent array
+        Map<Integer, TreeNode> map = new HashMap<>();
+        for (int i = 0; i < parent.length; i++) {
+            map.put(i, new TreeNode(i));
+        }
+        for (int i = 0; i < parent.length; i++) {
+            if (parent[i] == -1) {
+                root = map.get(i);
+            } else {
+                TreeNode parentNode = map.get(parent[i]);
+                TreeNode childNode = map.get(i);
+                childNode.parent = parentNode;
+                parentNode.children.add(childNode);
+            }
+        }
+    }
+    
+    public boolean lock(int v, int id) {
+        TreeNode node = findNode(root, v);
+        if (canLock(node, id)) {
+            node.locked = true;
+            node.lockedBy = id;
+            return true;
+        }
+        return false;
+    }
+    
+    public boolean unlock(int v, int id) {
+        TreeNode node = findNode(root, v);
+        if (node.locked && node.lockedBy == id) {
+            node.locked = false;
+            node.lockedBy = -1;
+            return true;
+        }
+        return false;
+    }
+    
+    // Upgrade operation
+    public boolean upgrade(int v, int id) {
+        TreeNode node = findNode(root, v);
+        if (!node.locked && hasLockedDescendants(node, id) && !hasLockedAncestors(node)) {
+            unlockDescendants(node);
+            node.locked = true;
+            node.lockedBy = id;
+            return true;
+        }
+        return false;
+    }
+    
+    private TreeNode findNode(TreeNode node, int v) {
+        if (node == null) return null;
+        if (node.val == v) return node;
+        for (TreeNode child : node.children) {
+            TreeNode result = findNode(child, v);
+            if (result != null) return result;
+        }
+        return null;
+    }
+    
+    private boolean canLock(TreeNode node, int id) {
+        if (node == null) return false;
+        if (node.locked || hasLockedAncestors(node)) return false;
+        return true;
+    }
+    
+    private boolean hasLockedAncestors(TreeNode node) {
+        if (node == null) return false;
+        if (node.locked) return true;
+        return hasLockedAncestors(node.parent);
+    }
+    
+    private boolean hasLockedDescendants(TreeNode node, int id) {
+        if (node == null) return false;
+        if (node.locked && node.lockedBy == id) return true;
+        for (TreeNode child : node.children) {
+            if (hasLockedDescendants(child, id)) return true;
+        }
+        return false;
+    }
+    
+    // Helper method to unlock all descendants
+    private void unlockDescendants(TreeNode node) {
+        if (node == null) return;
+        if (node.locked) {
+            node.locked = false;
+            node.lockedBy = -1;
+        }
+        for (TreeNode child : node.children) {
+            unlockDescendants(child);
+        }
+    }
+}
+
+public class TreeLockingSystem {
+    
+    public static void main(String[] args) {
+        Scanner scanner = new Scanner(System.in);
+        int T = scanner.nextInt();
+        
+        for (int t = 0; t < T; t++) {
+            int N = scanner.nextInt(); 
+            
+            int[] parent = new int[N];
+            for (int i = 0; i < N; i++) {
+                parent[i] = scanner.nextInt();
+            }
+            
+            MArayTree tree = new MArayTree(parent);
+            
+            int Q = scanner.nextInt(); 
+            for (int q = 0; q < Q; q++) {
+                String operation = scanner.next();
+                int v = scanner.nextInt();
+                int id = scanner.nextInt();
+                
+                boolean result = false;
+                if (operation.equals("Lock")) {
+                    result = tree.lock(v, id);
+                } else if (operation.equals("Unlock")) {
+                    result = tree.unlock(v, id);
+                } else if (operation.equals("Upgrade")) {
+                    result = tree.upgrade(v, id);
+                }
+                
+                System.out.println(result);
+            }
+        }
+        
+        scanner.close();
+    }
+}
