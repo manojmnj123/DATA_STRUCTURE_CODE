@@ -1,0 +1,80 @@
+import java.util.*;
+class Edge {
+    int src, dest, weight;
+    Edge(int src, int dest, int weight) {
+        this.src = src;
+        this.dest = dest;
+        this.weight = weight;
+    }
+}
+
+public class MaxWeightCycle {
+
+    public static void main(String[] args) {
+        int V = 5; // Number of vertices
+        int E = 8; // Number of edges
+
+        Edge[] edges = {
+            new Edge(0, 1, -1),
+            new Edge(0, 2, 4),
+            new Edge(1, 2, 3),
+            new Edge(1, 3, 2),
+            new Edge(1, 4, 2),
+            new Edge(3, 2, 5),
+            new Edge(3, 1, 1),
+            new Edge(4, 3, -3)
+        };
+
+        int[] maxWeights = new int[V];
+        Arrays.fill(maxWeights, Integer.MIN_VALUE);
+        maxWeights[0] = 0; // Starting vertex (can be any vertex)
+
+        for (int i = 0; i < V - 1; i++) {
+            for (Edge edge : edges) {
+                if (maxWeights[edge.src] != Integer.MIN_VALUE && maxWeights[edge.dest] < maxWeights[edge.src] + edge.weight) {
+                    maxWeights[edge.dest] = maxWeights[edge.src] + edge.weight;
+                }
+            }
+        }
+
+        boolean hasNegativeCycle = false;
+        int cycleStart = -1;
+        for (int i = 0; i < V; i++) {
+            for (Edge edge : edges) {
+                if (maxWeights[edge.src] != Integer.MIN_VALUE && maxWeights[edge.dest] < maxWeights[edge.src] + edge.weight) {
+                    maxWeights[edge.dest] = maxWeights[edge.src] + edge.weight;
+                    hasNegativeCycle = true;
+                    cycleStart = edge.dest;
+                }
+            }
+        }
+
+        if (!hasNegativeCycle) {
+            System.out.println("No negative weight cycle found.");
+        } else {
+            List<Integer> cycle = new ArrayList<>();
+            boolean[] visited = new boolean[V];
+            int current = cycleStart;
+
+            while (!visited[current]) {
+                cycle.add(current);
+                visited[current] = true;
+                for (Edge edge : edges) {
+                    if (edge.dest == current && maxWeights[edge.src] + edge.weight == maxWeights[current]) {
+                        current = edge.src;
+                        break;
+                    }
+                }
+            }
+
+            cycle.add(current);
+
+            System.out.println("Maximum weight cycle:");
+            for (int i = cycle.size() - 1; i >= 0; i--) {
+                System.out.print(cycle.get(i) + " ");
+            }
+            System.out.println();
+            System.out.println("Weight of the cycle: " + maxWeights[cycleStart]);
+        }
+    }
+}
